@@ -6,7 +6,7 @@
 #define END -1
 #define EMPTY 0
 #define WALL -3
-#define PATH -9
+#define PATH -5
 
 //Axes:
 //     Y^
@@ -43,7 +43,6 @@ void improvised_pathfinding(int** matrix, int height, int width, int crt_x, int 
 	int min = width * height + 1;
 	bool is_under_valid = false, is_above_valid = false, is_left_valid = false, is_right_valid = false;
 	bool is_next_to_start = false;
-	//std::cout << "'" << matrix[crt_y][crt_x] << "'";
 	//under
 	if (crt_y + 1 < height)
 		if (matrix[crt_y + 1][crt_x] == START)
@@ -95,10 +94,6 @@ void improvised_pathfinding(int** matrix, int height, int width, int crt_x, int 
 		if (matrix[crt_y][crt_x] != START && min != width * height + 1)
 			matrix[crt_y][crt_x] = min + 1;
 
-	//print_matrix(matrix, height, width);
-	//std::cout << "\n\n";
-
-
 	//checking if the correct values were assigned to the neigbours of the current node & if the neigbours are empty or not
 	//under
 	if (is_under_valid)
@@ -129,19 +124,63 @@ void improvised_pathfinding(int** matrix, int height, int width, int crt_x, int 
 
 }
 
-//marks the shortest path with PATH and returns the distance from current point to the END
-/*int mark_path(int** matrix, int height, int width, int crt_x, int crt_y)
+//marks the shortest path with PATH on a given matrix for which an pathfinding algorithm was applied and returns the distance from current point to the END
+//returns -1 if it can't find path
+int mark_path(int** matrix, int height, int width, int crt_x, int crt_y)
 {
+	int min = width * height + 1;
+	int next_x = -1, next_y = -1;
 	//under
 	if (crt_y + 1 < height)
+		if (matrix[crt_y + 1][crt_x] == START)
+			return 1;
+		else
+			if (matrix[crt_y + 1][crt_x] != END && matrix[crt_y + 1][crt_x] != WALL && matrix[crt_y + 1][crt_x] != PATH && matrix[crt_y + 1][crt_x] != EMPTY && matrix[crt_y + 1][crt_x] < min)
+			{
+				min = matrix[crt_y + 1][crt_x];
+				next_x = crt_x;
+				next_y = crt_y + 1;
+			}
 	//above
 	if (crt_y > 0)
+		if (matrix[crt_y - 1][crt_x] == START)
+			return 1;
+		else
+			if (matrix[crt_y - 1][crt_x] != END && matrix[crt_y - 1][crt_x] != WALL && matrix[crt_y - 1][crt_x] != PATH && matrix[crt_y - 1][crt_x] != EMPTY && matrix[crt_y - 1][crt_x] < min)
+			{
+				min = matrix[crt_y - 1][crt_x];
+				next_x = crt_x;
+				next_y = crt_y - 1;
+			}
 	//left
 	if (crt_x > 0)
+		if (matrix[crt_y][crt_x - 1] == START)
+			return 1;
+		else
+			if (matrix[crt_y][crt_x - 1] != END && matrix[crt_y][crt_x - 1] != WALL && matrix[crt_y][crt_x - 1] != PATH && matrix[crt_y][crt_x - 1] != EMPTY && matrix[crt_y][crt_x - 1] < min)
+			{
+				min = matrix[crt_y][crt_x - 1];
+				next_x = crt_x - 1;
+				next_y = crt_y;
+			}
 	//right
 	if (crt_x + 1 < width)
-
-}*/
+		if (matrix[crt_y][crt_x + 1] == START)
+			return 1;
+		else
+			if (matrix[crt_y][crt_x + 1] != END && matrix[crt_y][crt_x + 1] != WALL && matrix[crt_y][crt_x + 1] != PATH && matrix[crt_y][crt_x + 1] != EMPTY && matrix[crt_y][crt_x + 1] < min)
+			{
+				min = matrix[crt_y][crt_x + 1];
+				next_x = crt_x + 1;
+				next_y = crt_y;
+			}
+	if (next_x != -1 && next_y != -1)
+	{
+		matrix[next_y][next_x] = PATH;
+		return 1 + mark_path(matrix, height, width, next_x, next_y);
+	}
+	return -1;
+}
 
 int main()
 {
@@ -177,11 +216,12 @@ int main()
 
 	print_matrix(maze, height, width);
 
-/*	int distance = mark_path(maze, height, width, start_x, start_y);
+	int distance = mark_path(maze, height, width, end_x, end_y);
 
+	std::cout << "\n";
 	print_matrix(maze, height, width);
 	std::cout << "\n" << "Distance = " << distance;
-	*/
+	
 	//freeing the memory for the maze
 	for (int i = 0; i < height; i++)
 		delete[] maze[i];
