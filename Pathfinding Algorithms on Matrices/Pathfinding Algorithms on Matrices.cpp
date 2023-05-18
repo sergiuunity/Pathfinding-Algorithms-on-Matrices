@@ -33,7 +33,9 @@ void breadth_first_search(int** matrix, int height, int width, int crt_x, int cr
 
 }
 
-void improvised_pathfinding(int** matrix, int height, int width, int crt_x, int crt_y)
+//fills a given matrix with the distances from the entrance point
+//this algorithm shouldn't try early exits
+bool improvised_pathfinding(int** matrix, int height, int width, int crt_x, int crt_y)
 {
 	//if I'm here, the current node is valid
 
@@ -43,50 +45,63 @@ void improvised_pathfinding(int** matrix, int height, int width, int crt_x, int 
 	int min = width * height + 1;
 	bool is_under_valid = false, is_above_valid = false, is_left_valid = false, is_right_valid = false;
 	bool is_next_to_start = false;
+	bool is_solvable = false, is_neighbour_solvable;
 	//under
 	if (crt_y + 1 < height)
 		if (matrix[crt_y + 1][crt_x] == START)
 			is_next_to_start = true;
 		else
-			if (matrix[crt_y + 1][crt_x] != END && matrix[crt_y + 1][crt_x] != WALL)
-			{
-				is_under_valid = true;
-				if (matrix[crt_y + 1][crt_x] < min && matrix[crt_y + 1][crt_x] != EMPTY)
-					min = matrix[crt_y + 1][crt_x];
-			}
+			if (matrix[crt_y + 1][crt_x] == END)
+				is_solvable = true;
+			else
+				if (matrix[crt_y + 1][crt_x] != WALL)
+				{
+					is_under_valid = true;
+					if (matrix[crt_y + 1][crt_x] < min && matrix[crt_y + 1][crt_x] != EMPTY)
+						min = matrix[crt_y + 1][crt_x];
+				}
 	//above
 	if (crt_y > 0)
 		if (matrix[crt_y - 1][crt_x] == START)
 			is_next_to_start = true;
 		else
-			if (matrix[crt_y - 1][crt_x] != END && matrix[crt_y - 1][crt_x] != WALL)
-			{
-				is_above_valid = true;
-				if (matrix[crt_y - 1][crt_x] < min && matrix[crt_y - 1][crt_x] != EMPTY)
-					min = matrix[crt_y - 1][crt_x];
-			}
+			if (matrix[crt_y - 1][crt_x] == END)
+				is_solvable = true;
+			else		
+				if (matrix[crt_y - 1][crt_x] != WALL)
+				{
+					is_above_valid = true;
+					if (matrix[crt_y - 1][crt_x] < min && matrix[crt_y - 1][crt_x] != EMPTY)
+						min = matrix[crt_y - 1][crt_x];
+				}
 	//left
 	if (crt_x > 0)
 		if (matrix[crt_y][crt_x - 1] == START)
 			is_next_to_start = true;
 		else
-			if (matrix[crt_y][crt_x - 1] != END && matrix[crt_y][crt_x - 1] != WALL)
-			{
-				is_left_valid = true;
-				if (matrix[crt_y][crt_x - 1] < min && matrix[crt_y][crt_x - 1] != EMPTY)
-					min = matrix[crt_y][crt_x - 1];
-			}
+			if (matrix[crt_y][crt_x - 1] == END)
+				is_solvable = true;
+			else
+				if (matrix[crt_y][crt_x - 1] != WALL)
+				{
+					is_left_valid = true;
+					if (matrix[crt_y][crt_x - 1] < min && matrix[crt_y][crt_x - 1] != EMPTY)
+						min = matrix[crt_y][crt_x - 1];
+				}
 	//right
 	if (crt_x + 1 < width)
 		if (matrix[crt_y][crt_x + 1] == START)
 			is_next_to_start = true;
 		else
-			if (matrix[crt_y][crt_x + 1] != END && matrix[crt_y][crt_x + 1] != WALL)
-			{	
-				is_right_valid = true;
-				if (matrix[crt_y][crt_x + 1] < min && matrix[crt_y][crt_x + 1] != EMPTY)
-					min = matrix[crt_y][crt_x + 1];
-			}
+			if (matrix[crt_y][crt_x + 1] == END)
+				is_solvable = true;
+			else
+				if (matrix[crt_y][crt_x + 1] != WALL)
+				{
+					is_right_valid = true;
+					if (matrix[crt_y][crt_x + 1] < min && matrix[crt_y][crt_x + 1] != EMPTY)
+						min = matrix[crt_y][crt_x + 1];
+				}
 
 	if (is_next_to_start)
 		matrix[crt_y][crt_x] = 1;
@@ -114,14 +129,27 @@ void improvised_pathfinding(int** matrix, int height, int width, int crt_x, int 
 
 	//running the function for the valid neighbours
 	if (is_under_valid)
-		improvised_pathfinding(matrix, height, width, crt_x, crt_y + 1);
+	{
+		is_neighbour_solvable = improvised_pathfinding(matrix, height, width, crt_x, crt_y + 1);
+		is_solvable = is_solvable || is_neighbour_solvable;
+	}
 	if (is_above_valid)
-		improvised_pathfinding(matrix, height, width, crt_x, crt_y - 1);
+	{
+		is_neighbour_solvable = improvised_pathfinding(matrix, height, width, crt_x, crt_y - 1);
+		is_solvable = is_solvable || is_neighbour_solvable;
+	}
 	if (is_left_valid)
-		improvised_pathfinding(matrix, height, width, crt_x - 1, crt_y);
+	{
+		is_neighbour_solvable = improvised_pathfinding(matrix, height, width, crt_x - 1, crt_y);
+		is_solvable = is_solvable || is_neighbour_solvable;
+	}
 	if (is_right_valid)
-		improvised_pathfinding(matrix, height, width, crt_x + 1, crt_y);
+	{
+		is_neighbour_solvable = improvised_pathfinding(matrix, height, width, crt_x + 1, crt_y);
+		is_solvable = is_solvable || is_neighbour_solvable;
+	}
 
+	return is_solvable;
 }
 
 //marks the shortest path with PATH on a given matrix for which an pathfinding algorithm was applied and returns the distance from current point to the END
@@ -209,19 +237,31 @@ int main()
 	maze[end_y - 2][end_x - 1] = WALL;
 	maze[end_y - 2][end_x] = WALL;
 	maze[end_y - 2][end_x + 1] = WALL;
+	//make the maze unsolvable by adding the following walls:
+	/*maze[start_y + 4][start_x + 1] = WALL;
+	maze[start_y - 3][start_x + 1] = WALL;
+	maze[start_y - 4][start_x + 1] = WALL;
+	maze[start_y - 5][start_x + 1] = WALL;*/
 
 	//breadth_first_search(maze, height, width, start_x, start_y);
 
-	improvised_pathfinding(maze, height, width, start_x, start_y);
+	bool is_solvable = improvised_pathfinding(maze, height, width, start_x, start_y);
 
 	print_matrix(maze, height, width);
 
 	int distance = mark_path(maze, height, width, end_x, end_y);
-
-	std::cout << "\n";
-	print_matrix(maze, height, width);
-	std::cout << "\n" << "Distance = " << distance;
 	
+	if (is_solvable)
+	{
+		std::cout << "\n";
+		print_matrix(maze, height, width);
+		std::cout << "\n" << "Distance = " << distance << ".\n";
+	}
+	else
+	{
+		std::cout << "\nThe maze is not solvable.\n";
+	}
+
 	//freeing the memory for the maze
 	for (int i = 0; i < height; i++)
 		delete[] maze[i];
@@ -230,3 +270,4 @@ int main()
 	_CrtDumpMemoryLeaks();
 	return 0;
 }
+//TODO: What if unsolvable?
